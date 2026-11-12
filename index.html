@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Work Gap Tracker</title>
+<meta name="theme-color" content="#2457d6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gap Tracker">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#eef2f5;--surface:#fff;--ink:#14232e;--mute:#5d6f7c;--line:#d5dde3;--file:#2457d6;--gap:#d9822b;--idle:#c9d2d9;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a22;--surface:#17252f;--ink:#e8eef2;--mute:#93a5b2;--line:#2a3b47;--file:#7a9bff;--gap:#f0a94a;--idle:#3a4b57;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a22;--surface:#17252f;--ink:#e8eef2;--mute:#93a5b2;--line:#2a3b47;--file:#7a9bff;--gap:#f0a94a;--idle:#3a4b57;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;line-height:1.45;font-variant-numeric:tabular-nums}
+main{max-width:600px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:20px;margin:0 0 16px;font-weight:700}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.big{font-size:64px;font-weight:700;line-height:1;color:var(--gap)}
+.big small{font-size:28px}
+.cap{color:var(--mute);font-size:14px;margin-top:4px}
+.strip{position:relative;height:28px;margin:18px 0 8px;border-radius:6px;background:var(--idle);overflow:hidden}
+.strip div{position:absolute;top:0;bottom:0}
+.f{background:var(--file)}.g{background:var(--gap)}.p{background:repeating-linear-gradient(45deg,var(--mute),var(--mute) 3px,var(--idle) 3px,var(--idle) 6px)}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--mute);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:18px}
+.stat span{font-size:12px;color:var(--mute)}
+.ctl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;width:100%}
+.row{display:flex;gap:10px}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:12px 14px;cursor:pointer;flex:1;color:#fff;background:var(--file)}
+button.alt{background:var(--gap);color:#1a1205}
+button.ghost{background:transparent;color:var(--mute);border:1px solid var(--line);font-weight:400}
+button:disabled{opacity:.35;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gap);outline-offset:2px}
+h2{font-size:15px;margin:24px 0 8px}
+.log{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.log li{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.log li:last-child{border-bottom:0}
+.log li.gp{background:color-mix(in srgb,var(--gap) 14%,var(--surface));color:var(--mute)}
+.log .n{font-weight:600}
+.empty{padding:14px;color:var(--mute);font-size:14px}
+.tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:620px}
+th,td{padding:9px 12px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--mute);font-size:12px}
+tr:last-child td{border-bottom:0}
+tr.sum td{font-weight:700;background:color-mix(in srgb,var(--file) 10%,var(--surface))}
+td.pc{color:var(--gap);font-weight:600}
+.hint{color:var(--mute);font-size:12px;margin:6px 2px 0}
+#msg{min-height:20px;font-size:13px;color:var(--mute);margin-top:8px}
+.tgt{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.tgtTop{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--mute)}
+.tgtTop b{font-size:24px;color:var(--ink)}
+.bar{height:10px;border-radius:5px;background:var(--idle);margin-top:8px;overflow:hidden}
+#tgtFill{height:100%;width:0;background:var(--file);transition:width .3s}
+#tgtFill.done{background:#2f9e62}
+</style>
+</head>
+<body>
+<main>
+<h1>Work Gap Tracker</h1>
+<section class="hero">
+  <div class="big"><span id="pct">0.0</span><small>%</small></div>
+  <div class="cap">of your workday spent between files</div>
+  <div class="strip" id="strip" aria-hidden="true"></div>
+  <div class="legend"><span><i class="f"></i>File open</span><span><i class="g"></i>Gap between files</span><span><i style="background:var(--idle)"></i>Not logged</span><span><i class="p"></i>Break</span></div>
+  <div class="cap" id="brk" style="margin-top:8px"></div>
+</section>
+<div class="stats">
+  <div class="stat"><b id="tTotal">0s</b><span>Total work time</span></div>
+  <div class="stat"><b id="tFile">0s</b><span>Files open</span></div>
+  <div class="stat"><b id="tGap">0s</b><span>Gaps</span></div>
+  <div class="stat"><b id="tCount">0</b><span>Files opened</span></div>
+  <div class="stat"><b id="tAvg">0s</b><span>Avg time per file</span></div>
+  <div class="stat"><b id="tAvgGap">0s</b><span>Avg gap</span></div>
+</div>
+<section class="tgt">
+  <div class="tgtTop"><b id="tgtNum">0 / 220</b><span id="tgtLeft">220 to go</span></div>
+  <div class="bar"><div id="tgtFill"></div></div>
+  <div class="row" style="margin-top:12px">
+    <select id="sec" aria-label="Section"><option value="main">Main section (220)</option><option value="other">Other section (50)</option></select>
+    <input id="tgtIn" type="number" min="1" inputmode="numeric" aria-label="Daily target in files" style="max-width:110px">
+  </div>
+  <p class="hint">Choose your section each day. The target fills in automatically and you can edit it.</p>
+</section>
+<section class="ctl">
+  <input id="name" placeholder="File or case name (optional)" aria-label="File name" autocomplete="off">
+  <div class="row">
+    <button id="open">Open file</button>
+    <button id="close" class="alt">Close file</button>
+  </div>
+  <div class="row">
+    <button id="start" class="ghost">Start work</button>
+    <button id="pause" class="ghost">Pause for break</button>
+    <button id="end" class="ghost">End work</button>
+    </div><div class="row"><button id="reset" class="ghost">Reset day</button><button id="undo" class="alt" hidden>Undo reset</button><button id="reopen" class="alt" hidden>Reopen day</button>
+  </div>
+</section>
+<h2>Today’s log</h2>
+<ul class="log" id="log"></ul>
+
+<h2>Daily history</h2>
+<div class="tw"><table>
+  <thead><tr><th>Date</th><th>Section</th><th>Total</th><th>Files / target</th><th>Avg / file</th><th>Gap</th><th>Gap %</th></tr></thead>
+  <tbody id="hist"></tbody>
+</table></div>
+<p class="hint">A day is saved to history when you press End work. A running day appears as “now”.</p>
+<div class="ctl" style="margin-top:12px">
+  <div class="row">
+    <button id="expSum">Export daily summary CSV</button>
+    <button id="expLog" class="alt">Export file log CSV</button>
+  </div>
+  <button id="clr" class="ghost">Clear history</button>
+</div>
+<div id="msg" role="status" aria-live="polite"></div>
+</main>
+<script>
+var K2='wgt-v2',K1='wgt-v1';
+var DEF={main:220,other:50};
+var S={start:null,end:null,sessions:[],pauses:[],trash:null,history:[],section:'main',target:220};
+try{
+  var raw=localStorage.getItem(K2)||localStorage.getItem(K1);
+  if(raw){var p=JSON.parse(raw);S={start:p.start||null,end:p.end||null,sessions:p.sessions||[],history:p.history||[],section:p.section||'main',target:p.target||DEF[p.section||'main'],pauses:p.pauses||[],trash:p.trash||null}}
+}catch(e){}
+function save(){try{localStorage.setItem(K2,JSON.stringify(S))}catch(e){}}
+function $(id){return document.getElementById(id)}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function dur(ms){ms=Math.max(0,Math.round(ms/1000));var h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return (h?h+'h ':'')+(h||m?m+'m ':'')+s+'s'}
+function hms(ms){ms=Math.max(0,Math.round(ms/1000));var h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;function z(n){return (n<10?'0':'')+n}return z(h)+':'+z(m)+':'+z(s)}
+function clock(t){return new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function clock24(t){return t?new Date(t).toLocaleTimeString('en-GB'):''}
+function dkey(t){return new Date(t).toLocaleDateString('en-CA')}
+function active(){return S.start&&!S.end}
+function paused(){var q=S.pauses[S.pauses.length-1];return !!(q&&!q.b)}
+function openSession(){var l=S.sessions[S.sessions.length-1];return l&&!l.close?l:null}
+
+function ovl(a,b,P,now){var s=0;(P||[]).forEach(function(q){var qe=q.b||now;s+=Math.max(0,Math.min(b,qe)-Math.max(a,q.a))});return s}
+function calc(start,end,sessions,now,pauses){
+  var e=end||now,brk=ovl(start,e,pauses,now),total=e-start-brk,file=0,gap=0,segs=[],rows=[];
+  sessions.forEach(function(o,i){
+    var c=o.close||e;file+=c-o.open;segs.push({t:'f',a:o.open,b:c});
+    if(i>0){var p=sessions[i-1].close,gd=o.open-p-ovl(p,o.open,pauses,now);gap+=gd;segs.push({t:'g',a:p,b:o.open});rows.push({t:'g',d:gd,l:'Gap'})}
+    rows.push({t:'f',d:c-o.open,l:o.name,a:o.open,b:o.close})
+  });
+  var last=sessions[sessions.length-1];
+  if(last&&last.close&&!end){var gr=now-last.close-ovl(last.close,now,pauses,now);gap+=gr;segs.push({t:'g',a:last.close,b:now});rows.push({t:'g',d:gr,l:'Gap (running)'})}
+  (pauses||[]).forEach(function(q){segs.push({t:'p',a:q.a,b:q.b||now})});var n=sessions.length,gaps=Math.max(0,n-1)+((last&&last.close&&!end)?1:0);
+  return {start:start,end:end,total:total,wall:e-start,brk:brk,pauses:pauses||[],file:file,gap:gap,segs:segs,rows:rows,count:n,
+    avg:n?file/n:0,avgGap:gaps?gap/gaps:0,pct:total>0?gap/total*100:0,sessions:sessions};
+}
+function byDay(recs){var m={},o=[];recs.forEach(function(x){var k=dkey(x.start),d=m[k];if(!d){d=m[k]={start:x.start,end:x.end,total:0,brk:0,file:0,gap:0,count:0,section:x.section,target:x.target,live:false};o.push(d)}d.total+=x.total;d.brk+=x.brk;d.file+=x.file;d.gap+=x.gap;d.count+=x.count;d.end=x.end;d.section=x.section;d.target=x.target||d.target;if(!x.end)d.live=true});o.forEach(function(d){d.avg=d.count?d.file/d.count:0;d.pct=d.total>0?d.gap/d.total*100:0;d.tpct=d.target?d.count/d.target*100:0});return o}
+function secName(s){return s==='other'?'Other section':'Main section'}
+function withT(r,sec,tg){r.section=sec;r.target=tg;r.tpct=tg?r.count/tg*100:0;return r}
+function liveRec(now){return S.start?withT(calc(S.start,S.end,S.sessions,now,S.pauses),S.section,S.target):null}
+function allRecs(now){
+  var out=S.history.map(function(h){return withT(calc(h.start,h.end,h.sessions,h.end,h.pauses),h.section||'main',h.target||0)});
+  if(active())out.push(liveRec(now));
+  return out;
+}
+
+function render(){
+  var now=Date.now(),r=liveRec(now);
+  $('pct').textContent=r?r.pct.toFixed(1):'0.0';
+  $('tTotal').textContent=dur(r?r.total:0);$('tFile').textContent=dur(r?r.file:0);$('tGap').textContent=dur(r?r.gap:0);
+  $('tCount').textContent=r?r.count:0;$('tAvg').textContent=dur(r?r.avg:0);$('tAvgGap').textContent=dur(r?r.avgGap:0);
+  var st='';
+  if(r&&r.wall>0){r.segs.forEach(function(s){st+='<div class="'+s.t+'" style="left:'+((s.a-r.start)/r.wall*100)+'%;width:'+Math.max(0.3,(s.b-s.a)/r.wall*100)+'%"></div>'})}
+  $('strip').innerHTML=st;
+  $('brk').textContent=!r?'':(paused()?'On break since '+clock(S.pauses[S.pauses.length-1].a)+' · ':'')+'Break time (not counted): '+dur(r.brk);
+  var dk=S.start?dkey(S.start):dkey(now),prior=0;S.history.forEach(function(h){if(h.start!==S.start&&dkey(h.start)===dk)prior+=h.sessions.length});
+  var cnt=(r?r.count:0)+prior,tg=S.target||0,left=tg-cnt;
+  $('tgtNum').textContent=cnt+' / '+tg;
+  $('tgtLeft').textContent=left>0?left+' to go':(left===0?'Target reached':'Beat target by '+(-left));
+  $('tgtFill').style.width=(tg?Math.min(100,cnt/tg*100):0)+'%';
+  $('tgtFill').className=(tg&&cnt>=tg)?'done':'';
+  $('sec').value=S.section;
+  if(document.activeElement!==$('tgtIn'))$('tgtIn').value=tg;
+  var h='';
+  if(!r||!r.rows.length){h='<li class="empty">'+(S.start&&!S.end?'Open a file to start logging.':(S.end?'Day ended. Start work to begin a new day.':'Press Start work, then open your first file.'))+'</li>'}
+  else{r.rows.slice().reverse().forEach(function(x){
+    if(x.t==='g'){h+='<li class="gp"><span>'+x.l+'</span><span>'+dur(x.d)+'</span></li>'}
+    else{h+='<li><span><span class="n">'+esc(x.l)+'</span><br><small style="color:var(--mute)">'+clock(x.a)+' – '+(x.b?clock(x.b):'open')+'</small></span><span>'+dur(x.d)+'</span></li>'}
+  })}
+  $('log').innerHTML=h;
+  var recs=byDay(allRecs(now)),hh='';
+  if(!recs.length){hh='<tr><td colspan="7" style="text-align:left;color:var(--mute)">No days yet.</td></tr>'}
+  else{
+    recs.slice().reverse().forEach(function(x){
+      var live=x.live;
+      hh+='<tr><td>'+dkey(x.start)+(live?' (now)':'')+'</td><td>'+secName(x.section)+'</td><td>'+dur(x.total)+'</td><td>'+x.count+(x.target?' / '+x.target+' ('+x.tpct.toFixed(0)+'%)':'')+'</td><td>'+dur(x.avg)+'</td><td>'+dur(x.gap)+'</td><td class="pc">'+x.pct.toFixed(1)+'%</td></tr>';
+    });
+    var T=0,F=0,G=0,C=0,TT=0,CT=0;recs.forEach(function(x){T+=x.total;F+=x.file;G+=x.gap;C+=x.count;if(x.target){TT+=x.target;CT+=x.count}});
+    hh+='<tr class="sum"><td>All days</td><td></td><td>'+dur(T)+'</td><td>'+C+(TT?' / '+TT+' ('+(CT/TT*100).toFixed(0)+'%)':'')+'</td><td>'+dur(C?F/C:0)+'</td><td>'+dur(G)+'</td><td>'+(T>0?(G/T*100).toFixed(1):'0.0')+'%</td></tr>';
+  }
+  $('hist').innerHTML=hh;
+  $('start').disabled=active();
+  $('pause').textContent=paused()?'Resume work':(openSession()?'Close file to pause':'Pause for break');$('pause').className=paused()?'alt':'ghost';$('pause').disabled=!active()||(!paused()&&!!openSession());
+  $('reset').disabled=!S.start;$('undo').hidden=!(S.trash&&!S.start);$('reopen').hidden=!(S.start&&S.end);
+  $('end').disabled=!active();
+  $('open').disabled=!active()||!!openSession()||paused();
+  $('close').disabled=!openSession();
+  $('name').disabled=!active()||!!openSession()||paused();
+  $('expSum').disabled=!recs.length;
+  $('expLog').disabled=!recs.length;
+  $('clr').disabled=!S.history.length;
+}
+
+function msg(t){$('msg').textContent=t}
+function cell(v){
+  v=String(v==null?'':v);
+  if(/^[=+\-@\t\r]/.test(v))v="'"+v;
+  return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+}
+function toCsv(rows){return rows.map(function(r){return r.map(cell).join(',')}).join('\r\n')+'\r\n'}
+function dl(name,text){
+  try{var b=new Blob(['\ufeff'+text],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500);msg('Saved '+name)}
+  catch(e){msg('Could not save the file.')}
+}
+$('expSum').onclick=function(){
+  var now=Date.now(),rows=[['Date','Section','Start','End','Total hours worked excl. breaks (hh:mm:ss)','Total hours worked excl. breaks (decimal)','Break time (hh:mm:ss)','File time (hh:mm:ss)','Gap time (hh:mm:ss)','Gap % of total hours','Files opened','Daily target (files)','Target achieved %','Avg time per file (hh:mm:ss)']];
+  byDay(allRecs(now)).forEach(function(x){
+    rows.push([dkey(x.start),secName(x.section),clock24(x.start),clock24(x.end),hms(x.total),(x.total/3600000).toFixed(2),hms(x.brk),hms(x.file),hms(x.gap),x.pct.toFixed(1),x.count,x.target||'',x.target?x.tpct.toFixed(1):'',hms(x.avg)]);
+  });
+  dl('work-summary-'+dkey(now)+'.csv',toCsv(rows));
+};
+$('expLog').onclick=function(){
+  var now=Date.now(),rows=[['Date','Section','File name','Opened','Closed','Duration (hh:mm:ss)','Gap before this file (hh:mm:ss)']];
+  allRecs(now).forEach(function(x){
+    x.sessions.forEach(function(o,i){
+      var gb=i>0?hms(o.open-x.sessions[i-1].close-ovl(x.sessions[i-1].close,o.open,x.pauses,now)):'';
+      rows.push([dkey(x.start),secName(x.section),o.name,clock24(o.open),clock24(o.close),hms((o.close||(x.end||now))-o.open),gb]);
+    });
+  });
+  dl('work-file-log-'+dkey(now)+'.csv',toCsv(rows));
+};
+
+$('start').onclick=function(){S={start:Date.now(),end:null,sessions:[],pauses:[],trash:null,history:S.history,section:S.section,target:S.target};save();msg('');render()};
+$('open').onclick=function(){
+  if(!active()||openSession())return;
+  var n=$('name').value.trim()||('File '+(S.sessions.length+1));
+  S.sessions.push({name:n,open:Date.now(),close:null});$('name').value='';save();render()};
+$('close').onclick=function(){var o=openSession();if(o){o.close=Date.now();save();render()}};
+$('end').onclick=function(){
+  if(!active())return;
+  if(!endArmed){endArmed=true;$('end').textContent='Tap again to end work';msg('End the work day? Tap End work again to confirm.');endT=setTimeout(function(){endArmed=false;$('end').textContent='End work';msg('')},5000);return}
+  clearTimeout(endT);endArmed=false;$('end').textContent='End work';
+  var o=openSession(),t=Date.now();if(o)o.close=t;S.end=t;var q=S.pauses[S.pauses.length-1];if(q&&!q.b)q.b=t;
+  S.history.push({start:S.start,end:S.end,sessions:S.sessions,pauses:S.pauses,section:S.section,target:S.target});
+  save();msg('Day saved to history.');render()};
+var endArmed=false,endT=null;
+$('reopen').onclick=function(){
+  if(!(S.start&&S.end))return;var t=Date.now();
+  S.pauses.push({a:S.end,b:t});
+  S.history=S.history.filter(function(h){return h.start!==S.start});
+  S.end=null;save();msg('Day reopened. Time since you ended it is counted as a break.');render()};
+var rstArmed=false,rstT=null;
+$('reset').onclick=function(){
+  if(!S.start)return;
+  if(!rstArmed){rstArmed=true;$('reset').textContent='Tap again to confirm reset';msg('This clears today’s log. You can undo it right after.');rstT=setTimeout(function(){rstArmed=false;$('reset').textContent='Reset day';msg('')},5000);return}
+  clearTimeout(rstT);rstArmed=false;$('reset').textContent='Reset day';
+  S={start:null,end:null,sessions:[],pauses:[],history:S.history,section:S.section,target:S.target,trash:{start:S.start,end:S.end,sessions:S.sessions,pauses:S.pauses}};
+  save();msg('Day reset. Tap Undo reset to restore it.');render()};
+$('undo').onclick=function(){
+  var t=S.trash;if(!t||S.start)return;
+  S.start=t.start;S.end=t.end;S.sessions=t.sessions;S.pauses=t.pauses||[];S.trash=null;save();msg('Day restored.');render()};
+var clrArmed=false,clrT=null;
+$('clr').onclick=function(){
+  if(!clrArmed){clrArmed=true;$('clr').textContent='Tap again to clear all history';clrT=setTimeout(function(){clrArmed=false;$('clr').textContent='Clear history'},4000);return}
+  clearTimeout(clrT);clrArmed=false;$('clr').textContent='Clear history';S.history=[];save();msg('History cleared.');render()};
+$('name').addEventListener('keydown',function(e){if(e.key==='Enter')$('open').click()});
+$('pause').onclick=function(){
+  if(!active())return;var t=Date.now(),q=S.pauses[S.pauses.length-1];
+  if(q&&!q.b){q.b=t;msg('Back to work.')}else if(!openSession()){S.pauses.push({a:t,b:null});msg('Break started. The timer is paused.')}
+  save();render()};
+$('sec').onchange=function(){S.section=$('sec').value;S.target=DEF[S.section];save();render()};
+$('tgtIn').onchange=function(){var v=parseInt($('tgtIn').value,10);if(v>0){S.target=v;save()}render()};
+render();setInterval(render,1000);
+</script>
+<script>
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
